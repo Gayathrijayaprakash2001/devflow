@@ -1,52 +1,29 @@
-// pipeline {
-//     agent any
-
-//     stages {
-//         stage('Checkout') {
-//             steps {
-//                 git branch: 'main', url: 'https://github.com/Gayathrijayaprakash2001/devflow'
-//             }
-//         }
-
-//         stage('Build Docker Image') {
-//             steps {
-//                 bat 'docker build -t simple-devops-app .'
-//             }
-//         }
-
-//         stage('Run Container') {
-//             steps {
-//                 bat 'docker rm -f simple-devops-container || exit 0'
-//                 bat 'docker run -d --name simple-devops-container -p 5000:5000 simple-devops-app'
-//             }
-//         }
-//     }
-// }
-
 pipeline {
     agent any
+
+    environment {
+        IMAGE_NAME = 'tesseris/simple-devops-app'
+        IMAGE_TAG = 'latest'
+    }
 
     stages {
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t simple-devops-app .'
+                bat "docker build -t %IMAGE_NAME%:%IMAGE_TAG% ."
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Docker Login') {
             steps {
-                bat '''
-                docker ps -aq --filter "name=simple-devops-container" > container_id.txt
-                set /p CONTAINER_ID=<container_id.txt
-                if not "%CONTAINER_ID%"=="" docker rm -f simple-devops-container
-                del container_id.txt
-                '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+                }
             }
         }
 
-        stage('Run Container') {
+        stage('Push Docker Image') {
             steps {
-                bat 'docker run -d --name simple-devops-container -p 5000:5000 simple-devops-app'
+                bat "docker push %IMAGE_NAME%:%IMAGE_TAG%"
             }
         }
     }
