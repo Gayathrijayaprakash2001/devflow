@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'tesseris/simple-devops-app'
         IMAGE_TAG = 'latest'
+        KUBECONFIG = 'C:\\Users\\ADMIN\\.kube\\config'
     }
 
     stages {
@@ -24,6 +25,13 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 bat "docker push %IMAGE_NAME%:%IMAGE_TAG%"
+            }
+        }
+
+        stage('Check Kubernetes Connection') {
+            steps {
+                bat 'kubectl config current-context'
+                bat 'kubectl get nodes'
             }
         }
 
