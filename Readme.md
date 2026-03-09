@@ -1,4 +1,4 @@
-# DevFlow – End-to-End DevOps CI/CD Pipeline with Jenkins, Docker, and Kubernetes
+# DevFlow 
 
 ## Overview
 
